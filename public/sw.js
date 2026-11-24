@@ -1,9 +1,9 @@
-const CACHE_NAME = 'rabouilleuse-demo-v5';
+const CACHE_NAME = 'rabouilleuse-demo-v6';
 const SHELL_ASSETS = [
   './',
   './index.html',
-  './styles.css',
-  './app.js',
+  './styles.css?v=5',
+  './app.js?v=5',
   './manifest.json',
   './img/logo-rabouilleuse.png',
   './img/icon-512.png'
@@ -44,7 +44,7 @@ self.addEventListener('fetch', (event) => {
 
   if (isShell) {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, { cache: 'no-cache' })
         .then((response) => {
           if (response.ok) {
             const copy = response.clone();

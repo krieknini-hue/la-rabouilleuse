@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#115b8c">
+  <meta name="description" content="Compagnon de Loire pour les adhérents et visiteurs de La Rabouilleuse – École de Loire à Rochecorbon : météo fluviale, niveaux Hub'Eau & GloFAS, balades, agenda et vie associative.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://krieknini-hue.github.io/la-rabouilleuse/">
+  <meta property="og:title" content="La Rabouilleuse — Compagnon de Loire">
+  <meta property="og:description" content="Météo fluviale, niveaux de la Loire en direct (Hub'Eau & GloFAS), Agenda 2026, balades en bateau et vie associative à Rochecorbon.">
+  <meta property="og:image" content="https://krieknini-hue.github.io/la-rabouilleuse/img/toue-loire.jpg">
+  <title>La Rabouilleuse — Compagnon de Loire</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./img/logo-rabouilleuse.png" type="image/png">
+  <link rel="apple-touch-icon" href="./img/icon-512.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <div class="brand">
+        <img src="./img/logo-rabouilleuse.png" alt="Logo La Rabouilleuse École de Loire" class="brand-logo" width="40" height="40">
+        <div class="brand-text">
+          <span class="brand-title">La Rabouilleuse</span>
+          <span class="brand-subtitle">École de Loire • Rochecorbon</span>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <div class="role-switch" role="group" aria-label="Mode d'affichage de la démonstration">
+          <button type="button" class="role-btn" id="role-visitor-btn" data-role="visitor" aria-pressed="true">
+            👤 Visiteur
+          </button>
+          <button type="button" class="role-btn" id="role-member-btn" data-role="member" aria-pressed="false">
+            ⚓ Adhérent
+          </button>
+        </div>
+        <button type="button" class="demo-info-btn" id="open-demo-info-btn" aria-label="À propos de ce démonstrateur">
+          ℹ️ Démo
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- ONGLET 1 : LOIRE & METEO -->
+    <section id="tab-loire" class="tab-panel" role="tabpanel" aria-labelledby="nav-loire">
+      <!-- Bandeau Info Flash Embarquement -->
+      <article class="flash-banner" aria-live="polite">
+        <div class="flash-content">
+          <div class="flash-header">
+            <span class="flash-pill">📢 Info embarquement</span>
+            <span class="flash-meta" id="flash-updated-at">Mis à jour par l'équipe</span>
+          </div>
+          <p class="flash-text" id="flash-message-text"></p>
+        </div>
+        <button type="button" class="btn-secondary btn-sm member-only" id="edit-flash-btn" hidden>
+          ✏️ Modifier
+        </button>
+      </article>
+
+      <!-- Carte Conditions Aujourd'hui -->
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2>Conditions aujourd'hui à Rochecorbon</h2>
+            <p class="muted-text" id="live-sync-status">Chargement des relevés officiels…</p>
+          </div>
+          <button type="button" class="btn-ghost btn-sm" id="refresh-loire-btn" title="Actualiser les données en direct">
+            🔄 Actualiser
+          </button>
+        </div>
+
+        <div class="conditions-grid">
+          <!-- Météo fluviale -->
+          <div class="condition-box weather-box">
+            <div class="condition-box-head">
+              <span class="source-tag">☀️ Météo fluviale (Open-Meteo)</span>
+              <span class="sail-badge" id="sail-condition-badge">—</span>
+            </div>
+            <div class="weather-hero">
+              <div class="weather-icon" id="weather-current-icon" aria-hidden="true">⛅</div>
+              <div>
+                <div class="metric-xl" id="weather-current-temp">-- °C</div>
+                <div class="muted-text" id="weather-current-desc">Chargement météo…</div>
+              </div>
+            </div>
+            <dl class="mini-stats">
+              <div>
+                <dt>Vent &amp; rafales</dt>
+                <dd id="weather-current-wind">--</dd>
+              </div>
+              <div>
+                <dt>Direction</dt>
+                <dd id="weather-current-dir">--</dd>
+              </div>
+              <div>
+                <dt>Aube / Crépuscule</dt>
+                <dd id="weather-sun-times">--</dd>
+              </div>
+            </dl>
+          </div>
+
+          <!-- Niveau de la Loire -->
+          <div class="condition-box river-box">
+            <div class="condition-box-head">
+              <span class="source-tag">🌊 Loire à Tours (Hub'Eau)</span>
+              <span class="river-level-badge" id="river-nav-badge">--</span>
+            </div>
+            <div class="river-hero">
+              <div>
+                <div class="metric-xl" id="river-tours-height">-- m</div>
+                <div class="muted-text" id="river-tours-delta">Variation 24h : --</div>
+              </div>
+              <div class="river-flow-pill">
+                <span class="flow-label">Débit</span>
+                <strong id="river-tours-flow">-- m³/s</strong>
+              </div>
+            </div>
+            <p class="calibration-note" id="river-tours-meta">
+              Pont Mirabeau (station de référence). Repères indicatifs à calibrer avec les pilotes.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Carte Évolution 72h & Cascade Amont -->
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2>Évolution 72 h &amp; onde venue de l'amont</h2>
+            <p class="muted-text">Ce qui passe à Gien, Orléans puis Onzain arrive vers Rochecorbon sous 10 à 48 h.</p>
+          </div>
+          <a class="btn-ghost btn-sm" href="https://www.vigicrues.gouv.fr/station/K490003010" target="_blank" rel="noopener noreferrer">
+            Vigicrues ↗
+          </a>
+        </div>
+
+        <div class="chart-wrap">
+          <div class="chart-caption">
+            <span>Hauteur d'eau mesurée à Tours – Pont Mirabeau (72 dernières heures)</span>
+            <span id="chart-72h-range" class="muted-text">--</span>
+          </div>
+          <div id="chart-72h-container" class="svg-chart-box" aria-label="Graphique de la hauteur d'eau sur 72 heures">
+            <div class="skeleton-box">Chargement de la courbe 72 h…</div>
+          </div>
+        </div>
+
+        <h3 class="subsection-title">Cascade des stations (Amont ➔ Rochecorbon)</h3>
+        <div class="cascade-grid" id="upstream-cascade-grid">
+          <div class="skeleton-box">Chargement des stations amont…</div>
+        </div>
+
+        <p class="info-note">
+          ℹ️ Les prévisions officielles de hauteur du SPC (Vigicrues) portent sur <strong>24 à 48 h</strong> lors des épisodes de crue. Pour anticiper plus loin, voir la tendance GloFAS ci-dessous.
+        </p>
+      </section>
+
+      <!-- Carte Tendances 7 jours / 30 jours GloFAS -->
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2>Tendances à plusieurs jours &amp; semaines</h2>
+            <p class="muted-text">Modèle hydrologique européen Copernicus GloFAS (débit en m³/s à Rochecorbon).</p>
+          </div>
+          <div class="segmented" role="group" aria-label="Horizon de prévision GloFAS">
+            <button type="button" class="seg-btn active" data-horizon="7" aria-pressed="true">7 jours</button>
+            <button type="button" class="seg-btn" data-horizon="30" aria-pressed="false">30 jours</button>
+          </div>
+        </div>
+
+        <div class="chart-wrap">
+          <div class="chart-caption">
+            <span id="glofas-caption">Débit passé (-5 j) et tendance prévue (+7 j)</span>
+            <span id="glofas-summary-badge" class="trend-pill">--</span>
+          </div>
+          <div id="chart-glofas-container" class="svg-chart-box" aria-label="Graphique des tendances de débit GloFAS">
+            <div class="skeleton-box">Chargement des tendances GloFAS…</div>
+          </div>
+          <div class="chart-legend">
+            <span><i class="legend-dot dot-past"></i> Passé récent</span>
+            <span><i class="legend-dot dot-mean"></i> Tendance médiane/moy.</span>
+            <span><i class="legend-dot dot-band"></i> Enveloppe min–max</span>
+          </div>
+        </div>
+
+        <p class="info-note">
+          🧭 Lecture pratique : cette courbe donne une <strong>tendance de volume d'eau</strong> (coup d'eau ou baisse durable) sur 2 à 4 semaines, pas une cote au centimètre au ponton.
+        </p>
+      </section>
+
+      <!-- Carte Météo 7 jours -->
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2>Météo fluviale à 7 jours</h2>
+            <p class="muted-text">Températures, vent, rafales et risque de pluie pour préparer vos sorties.</p>
+          </div>
+        </div>
+        <div class="forecast-list" id="weather-7d-list">
+          <div class="skeleton-box">Chargement des prévisions 7 jours…</div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ONGLET 2 : BALADES & PLANNING -->
+    <section id="tab-planning" class="tab-panel" role="tabpanel" aria-labelledby="nav-planning" hidden>
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2>Agenda 2026 — La Rabouilleuse</h2>
+            <p class="muted-text" id="planning-subtitle">
+              Calendrier officiel publié sur larabouilleuse-ecoledeloire.com/agenda/ (11 rendez-vous d'avril à septembre 2026).
+            </p>
+          </div>
+          <button type="button" class="btn-primary btn-sm member-only" id="open-add-activity-btn" hidden>
+            + Ajouter une activité
+          </button>
+        </div>
+
+        <div class="filter-chips" role="group" aria-label="Filtrer les activités de l'Agenda 2026">
+          <button type="button" class="chip active" data-plan-filter="all" aria-pressed="true">Tout l'Agenda 2026 (11)</button>
+          <button type="button" class="chip" data-plan-filter="dimanche" aria-pressed="false">⛵ Dimanches de la Rabouilleuse (6)</button>
+          <button type="button" class="chip" data-plan-filter="evenement" aria-pressed="false">🎶 Bateau-Lavoir &amp; Concerts (5)</button>
+        </div>
+
+        <!-- Mes réservations / inscriptions -->
+        <div id="my-bookings-panel" class="my-bookings" hidden>
+          <div class="my-bookings-head">
+            <strong>🎟️ Mes réservations &amp; participations (démo locale)</strong>
+          </div>
+          <ul id="my-bookings-list" class="my-bookings-list"></ul>
+        </div>
+
+        <div id="activities-list" class="activities-grid"></div>
+      </section>
+
+      <!-- Carte Balades à la carte & Privatisation -->
+      <section class="card highlight-card">
+        <div class="private-row">
+          <div style="flex:1;min-width:240px">
+            <h2>Balades à la carte &amp; Privatisation avec pilote</h2>
+            <p class="muted-text" style="margin-bottom:0.35rem">
+              Sur réservation (confirmée dès 5 passagers, max 12 personnes par bateau — 1 humain = passager dès 1 an). Règlement en chèque, espèces ou CB.
+            </p>
+            <div class="private-tariffs">
+              <span class="private-tariff-pill">⛵ <strong>Découverte (1h30 — 10h30, 14h, 16h) :</strong> 20 € • Adhérent·e 15 € • Enfant 12 €</span>
+              <span class="private-tariff-pill">🌅 <strong>Crépusculaire (2h30 — 18h30/19h/19h30) :</strong> 36 € • Adhérent·e 25 € • Enfant 16 €</span>
+              <span class="private-tariff-pill">🚤 <strong>Privatisation Journée (2h min) :</strong> 240 € • Adhérent·e 200 € (120 €/h supp)</span>
+              <span class="private-tariff-pill">🌙 <strong>Privatisation Soirée (2h30 min) :</strong> 390 € • Adhérent·e 350 €</span>
+            </div>
+          </div>
+          <div class="private-actions">
+            <button type="button" class="btn-primary btn-sm" id="open-decouverte-btn">Réserver Découverte (1h30)</button>
+            <button type="button" class="btn-secondary btn-sm" id="open-crepuscule-btn">Réserver Crépusculaire (2h30)</button>
+            <button type="button" class="btn-secondary btn-sm" id="open-private-quote-btn">Privatiser un bateau</button>
+            <a class="btn-ghost btn-sm" href="tel:+33695393200">📞 06 95 39 32 00</a>
+            <a class="btn-ghost btn-sm" href="https://www.helloasso.com/associations/la-rabouilleuse-ecole-de-loire/evenements/bon-cadeau-balade-crepusculaire-pour-2-personnes" target="_blank" rel="noopener noreferrer">🎁 Bon cadeau (HelloAsso) ↗</a>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ONGLET 3 : ALBUM LOIRE -->
+    <section id="tab-album" class="tab-panel" role="tabpanel" aria-labelledby="nav-album" hidden>
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2>Album photo de La Rabouilleuse</h2>
+            <p class="muted-text">Instants de navigation, faune de Loire et vie des chantiers.</p>
+          </div>
+          <button type="button" class="btn-primary btn-sm" id="open-add-photo-btn">
+            + Partager une photo
+          </button>
+        </div>
+
+        <div class="filter-chips" role="group" aria-label="Filtrer les photos par thème">
+          <button type="button" class="chip active" data-album-filter="all" aria-pressed="true">Toutes</button>
+          <button type="button" class="chip" data-album-filter="navigation" aria-pressed="false">⛵ Navigations</button>
+          <button type="button" class="chip" data-album-filter="ambiance" aria-pressed="false">🌅 Ambiances</button>
+          <button type="button" class="chip" data-album-filter="faune" aria-pressed="false">🦅 Faune</button>
+          <button type="button" class="chip" data-album-filter="chantier" aria-pressed="false">🛠️ Chantiers</button>
+        </div>
+
+        <div id="album-member-hint" class="info-note" hidden>
+          💡 En mode <strong>Visiteur</strong>, la galerie est en lecture seule. Activez le mode <strong>⚓ Adhérent</strong> en haut pour tester l'ajout de photo.
+        </div>
+
+        <div id="album-grid" class="album-grid"></div>
+      </section>
+    </section>
+
+    <!-- ONGLET 4 : PRATIQUE & ASSO -->
+    <section id="tab-pratique" class="tab-panel" role="tabpanel" aria-labelledby="nav-pratique" hidden>
+      <section class="card">
+        <h2>Nos 3 ports d'attache &amp; contacts</h2>
+        <p class="muted-text">RDV 10 min avant le départ. En basses eaux, l'embarquement s'effectue au Bateau-Lavoir dans le centre de Rochecorbon.</p>
+
+        <div class="places-grid-3">
+          <article class="place-card">
+            <h3>⛵ Le Bateau-Lavoir</h3>
+            <p class="muted-text">56 quai de la Loire, centre de Rochecorbon (en contrebas de la place de la Lanterne). Ouvert ven. &amp; sam. 17h30–22h30.</p>
+            <div class="place-actions">
+              <a class="btn-secondary btn-sm" href="https://maps.app.goo.gl/Kcpbj2x8Ns7LDBBf7" target="_blank" rel="noopener noreferrer">📍 Google Maps ↗</a>
+              <a class="btn-ghost btn-sm" href="https://waze.com/ul/hu02t9nrm2" target="_blank" rel="noopener noreferrer">🚗 Waze ↗</a>
+            </div>
+          </article>
+
+          <article class="place-card">
+            <h3>⚓ Le Peliau (St-Georges)</h3>
+            <p class="muted-text">Fief historique de Rochecorbon (rive droite). Accueil pour embarquer, jardiner, bricoler et festoyer (parking St-Georges).</p>
+            <div class="place-actions">
+              <a class="btn-secondary btn-sm" href="https://www.google.com/maps/place/la+rabouilleuse+ecole+de+loire/@47.4050612,0.7335889,17z/" target="_blank" rel="noopener noreferrer">📍 Google Maps ↗</a>
+            </div>
+          </article>
+
+          <article class="place-card">
+            <h3>🪵 L'Atelier « Poisson »</h3>
+            <p class="muted-text">Vieux Saint-Pierre-des-Corps (rive gauche). Espace dédié à la construction et à la rénovation des bateaux en bois (ateliers du samedi).</p>
+          </article>
+        </div>
+
+        <div class="contact-strip">
+          <div>
+            <strong>06 95 39 32 00 • larabouilleuse.ecoledeloire@gmail.com</strong>
+            <div class="muted-text">Règlement sur place : chèque, espèces ou CB • Confirmation dès 5 réservations</div>
+          </div>
+          <div class="contact-links">
+            <a class="btn-secondary btn-sm" href="tel:+33695393200">📞 Appeler</a>
+            <a class="btn-secondary btn-sm" href="mailto:larabouilleuse.ecoledeloire@gmail.com">✉️ Écrire</a>
+            <a class="btn-ghost btn-sm" href="https://www.larabouilleuse-ecoledeloire.com" target="_blank" rel="noopener noreferrer">Site officiel ↗</a>
+            <a class="btn-ghost btn-sm" href="https://www.facebook.com/larabouilleuse.ecoledeloire" target="_blank" rel="noopener noreferrer">Facebook ↗</a>
+          </div>
+        </div>
+
+        <div class="helloasso-links">
+          <a class="btn-primary btn-sm" href="https://www.helloasso.com/associations/la-rabouilleuse-ecole-de-loire/adhesions/adhesion-2026-valable-du-01-01-2026-au-31-12-2026" target="_blank" rel="noopener noreferrer">
+            🪪 Adhérer en ligne 2026 (HelloAsso) ↗
+          </a>
+          <a class="btn-secondary btn-sm" href="https://www.helloasso.com/associations/la-rabouilleuse-ecole-de-loire/evenements/formation-a-la-navigation-sur-la-loire-2026" target="_blank" rel="noopener noreferrer">
+            ⛵ Formation navigation 2026 (HelloAsso) ↗
+          </a>
+        </div>
+      </section>
+
+      <!-- L'association & L'équipage -->
+      <section class="card">
+        <h2>L'association &amp; L'équipage</h2>
+        <p class="muted-text">
+          Association loi 1901 fondée en <strong>mars 2011</strong>, La Rabouilleuse réunit <strong>170 adhérents</strong> (dont 30 souscrivent à une convention de formation à la batellerie et au co-usage des bateaux). Affiliée <strong>UFOLEP</strong> et membre du réseau <strong>GRAINE Centre</strong>, elle édite chaque mois la newsletter <em>« La Bourde »</em>.
+        </p>
+
+        <div class="crew-grid">
+          <article class="crew-card">
+            <div class="crew-name">Clément Sirgue</div>
+            <div class="crew-role">Coordinateur — BE Voile</div>
+            <p class="muted-text" style="margin:0">Éducateur à l’environnement, diplômé ENV / Brevet d’État de voile, fondateur à l’initiative de l’association à Rochecorbon.</p>
+          </article>
+          <article class="crew-card">
+            <div class="crew-name">Isabelle Chollet</div>
+            <div class="crew-role">Administratrice</div>
+            <p class="muted-text" style="margin:0">Gestion, coordination associative et accompagnement des projets tout au long de l’année.</p>
+          </article>
+          <article class="crew-card">
+            <div class="crew-name">Titouan Gallais</div>
+            <div class="crew-role">Batelier — Éducateur environnement</div>
+            <p class="muted-text" style="margin:0">Navigation traditionnelle, chantiers bois, entretien de la flotte et animations ligériennes.</p>
+          </article>
+        </div>
+
+        <p class="partners-strip">
+          <strong>Soutiens &amp; partenaires :</strong> Commune de Rochecorbon, Tours Métropole Val de Loire, Conseil départemental d’Indre-et-Loire, Région Centre-Val de Loire, Préfecture d’Indre-et-Loire, DSDEN 37, FONJEP.
+        </p>
+      </section>
+
+      <!-- Carnet de Loire (accordéons natifs non exclusifs) -->
+      <section class="card accordion" aria-labelledby="carnet-heading">
+        <h2 id="carnet-heading">Carnet de Loire &amp; mémos</h2>
+        <p class="muted-text">Repères rapides consultables même hors réseau une fois l'application installée.</p>
+
+        <details>
+          <summary>Vocabulaire de la batellerie ligérienne</summary>
+          <div class="details-body">
+            <ul>
+              <li><strong>Toue, futreau, chaland, sablière :</strong> bateaux traditionnels à fond plat adaptés aux hauts-fonds et bancs de sable de la Loire.</li>
+              <li><strong>Voile carrée :</strong> grand’voile hissée sur vergue horizontale, héritée de la batellerie ancienne, très efficace par vent portant.</li>
+              <li><strong>Bourde :</strong> long bâton ferré en bois permettant de pousser le bateau contre le courant et de lire le fond.</li>
+              <li><strong>Piautre :</strong> large gouvernail ligérien manœuvré à l'arrière du bateau.</li>
+              <li><strong>Arban :</strong> mot du patois creusois désignant une tâche collective nécessitant l'entraide du voisinage (ex. mise à l'eau d'une coque de 3 tonnes sur rondins et palans).</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>Faune observable sur le tronçon Rochecorbon – Vouvray</summary>
+          <div class="details-body">
+            <ul>
+              <li><strong>Castor d'Europe :</strong> actif à l'aube et au crépuscule près des saules et berges boisées (traces de rongement caractéristiques).</li>
+              <li><strong>Sterne pierregarin &amp; sterne naine :</strong> nichent sur les grèves et bancs de sable au printemps et en été.</li>
+              <li><strong>Balbuzard pêcheur :</strong> rapace pêcheur de retour en Val de Loire, souvent posé sur les bois morts en berge.</li>
+              <li><strong>Héron cendré &amp; grande aigrette :</strong> fidèles des boires et des eaux calmes dès le petit matin.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>Préparer sa balade &amp; conditions de départ</summary>
+          <div class="details-body">
+            <ul>
+              <li><strong>Rendez-vous 10 min avant le départ</strong> au ponton du Bateau-Lavoir (centre de Rochecorbon, en contrebas de la place de la Lanterne) ou au Peliau selon la hauteur d'eau.</li>
+              <li><strong>Confirmation dès 5 réservations :</strong> si ce seuil n'est pas atteint, la balade est reportée ou annulée sans frais (max 12 personnes par bateau).</li>
+              <li><strong>Équipement conseillé :</strong> chaussures plates, chapeau, ciré / coupe-vent, crème solaire, eau (et paire de jumelles si vous en avez).</li>
+              <li><strong>Balades crépusculaires &amp; Dimanches :</strong> pique-nique à partager vivement recommandé ! Règlement en chèque, espèces ou CB.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>La flotte de La Rabouilleuse</summary>
+          <div class="details-body">
+            <ul>
+              <li><strong>La Rabouilleuse (Toue Sablière, 2013) :</strong> mât de 10 m, grand’voile de 41 m² et voile de hune de 8 m². Accueille 12 passagers.</li>
+              <li><strong>La Sibylle (Toue Sablière, 2019) :</strong> un peu plus longue et plus étroite, plus rapide et plus proche de l’eau.</li>
+              <li><strong>Bachi et Bouzouk (Fûtreaux, 2016–2017) :</strong> bateaux jumeaux en bois de 9 m sans moteur (voile, bourde, avirons), réservés à la formation batelière (8 personnes).</li>
+              <li><strong>Le Faou et le Roy (Barques / allèges) :</strong> construites au Péliau pour rejoindre les bateaux mouillés au large ou s’initier à la bourde.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>Éducation à l'environnement, École de Loire &amp; chantiers</summary>
+          <div class="details-body">
+            <ul>
+              <li><strong>Méthode « découverte progressive » (Joseph Cornell) :</strong> susciter l'enthousiasme, focaliser l'attention, provoquer une expérience directe, partager l'inspiration (de la maternelle à l'université).</li>
+              <li><strong>Formation navigation (« Bachi » &amp; « Bouzouk ») :</strong> de mai à novembre, apprentissage du « sens ligérien » (voile, aviron, bourde, courants, passage des ponts) avant de naviguer en autonomie, jamais seul.</li>
+              <li><strong>Chantiers participatifs :</strong> ateliers du samedi à l'atelier Poisson ou au Peliau, encadrés par des pros avec outillage mis à disposition.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <!-- Pistes d'évolution pour le CA -->
+      <section class="card roadmap-card">
+        <h2>Feuille de route si le CA valide l'idée</h2>
+        <div class="roadmap-grid">
+          <div class="roadmap-item">
+            <span class="roadmap-num">1</span>
+            <div>
+              <strong>Déjà réel aujourd'hui</strong>
+              <p class="muted-text">Météo fluviale Open-Meteo, niveaux Hub'Eau en direct et tendances GloFAS à 30 jours fonctionnent sans clé ni coût.</p>
+            </div>
+          </div>
+          <div class="roadmap-item">
+            <span class="roadmap-num">2</span>
+            <div>
+              <strong>Calibration pilotes</strong>
+              <p class="muted-text">Ajuster les seuils d'alerte (étiage / Pélio / Bateau-Lavoir / crue) selon l'expérience exacte des pilotes.</p>
+            </div>
+          </div>
+          <div class="roadmap-item">
+            <span class="roadmap-num">3</span>
+            <div>
+              <strong>Planning &amp; HelloAsso</strong>
+              <p class="muted-text">Synchroniser l'agenda existant de l'association (iCal/Google Calendar) et renvoyer vers le paiement HelloAsso.</p>
+            </div>
+          </div>
+          <div class="roadmap-item">
+            <span class="roadmap-num">4</span>
+            <div>
+              <strong>Espace adhérent &amp; Album partagé</strong>
+              <p class="muted-text">Connecter une base Supabase (comme pour Tombola) pour partager les annonces flash, chantiers et photos modérées. Coût d'hébergement : 0 €.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <!-- Navigation basse mobile-first -->
+  <nav class="bottom-nav" aria-label="Navigation principale">
+    <div class="bottom-nav-inner" role="tablist">
+      <button type="button" id="nav-loire" class="nav-btn active" role="tab" aria-selected="true" aria-controls="tab-loire" data-tab="loire">
+        <span class="nav-ico" aria-hidden="true">🌊</span>
+        <span class="nav-label">Loire &amp; Météo</span>
+      </button>
+      <button type="button" id="nav-planning" class="nav-btn" role="tab" aria-selected="false" aria-controls="tab-planning" data-tab="planning">
+        <span class="nav-ico" aria-hidden="true">⛵</span>
+        <span class="nav-label">Balades</span>
+      </button>
+      <button type="button" id="nav-album" class="nav-btn" role="tab" aria-selected="false" aria-controls="tab-album" data-tab="album">
+        <span class="nav-ico" aria-hidden="true">📸</span>
+        <span class="nav-label">Album</span>
+      </button>
+      <button type="button" id="nav-pratique" class="nav-btn" role="tab" aria-selected="false" aria-controls="tab-pratique" data-tab="pratique">
+        <span class="nav-ico" aria-hidden="true">🧭</span>
+        <span class="nav-label">Pratique</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Toast discret -->
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- MODALE : Réservation de balade / Privatisation -->
+  <dialog id="booking-dialog" class="modal-dialog" closedby="any" aria-labelledby="booking-dialog-title">
+    <div class="modal-head">
+      <h1 id="booking-dialog-title" class="modal-title">Réserver une balade</h1>
+      <button type="button" class="modal-close" data-close-dialog="booking-dialog" aria-label="Fermer la fenêtre">✕</button>
+    </div>
+
+    <div id="booking-activity-summary" class="modal-summary"></div>
+
+    <form id="booking-form" class="modal-form" novalidate>
+      <input type="hidden" id="booking-activity-id" name="activityId">
+
+      <div class="field-row">
+        <div class="field">
+          <label for="booking-adults">Adultes</label>
+          <span id="booking-adults-hint" class="hint">12 places max par bateau</span>
+          <input type="number" id="booking-adults" name="adults" min="0" max="12" value="2" required aria-describedby="booking-adults-hint" data-error="booking-adults-error">
+          <div id="booking-adults-error" class="error-msg">
+            <span role="img" aria-label="Erreur">⚠️</span> Indiquez entre 0 et 12 adultes (au moins 1 passager au total).
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="booking-children">Enfants (-12 ans)</label>
+          <span id="booking-children-hint" class="hint">Tarif réduit enfant</span>
+          <input type="number" id="booking-children" name="children" min="0" max="11" value="0" required aria-describedby="booking-children-hint" data-error="booking-children-error">
+          <div id="booking-children-error" class="error-msg">
+            <span role="img" aria-label="Erreur">⚠️</span> Indiquez un nombre entre 0 et 11.
+          </div>
+        </div>
+      </div>
+
+      <div class="field checkbox-field">
+        <label class="checkbox-label">
+          <input type="checkbox" id="booking-is-member" name="isMember">
+          <span>Appliquer le <strong>tarif adhérent</strong> La Rabouilleuse</span>
+        </label>
+      </div>
+
+      <div class="price-preview" id="booking-price-preview">
+        Total estimé : <strong>-- €</strong>
+      </div>
+
+      <div class="field">
+        <label for="booking-name">Nom et prénom</label>
+        <span id="booking-name-hint" class="hint">Ex. Camille Durand</span>
+        <input type="text" id="booking-name" name="name" required minlength="2" autocomplete="name" aria-describedby="booking-name-hint" data-error="booking-name-error">
+        <div id="booking-name-error" class="error-msg">
+          <span role="img" aria-label="Erreur">⚠️</span> Saisissez un nom d'au moins 2 caractères.
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="booking-email">Adresse e-mail</label>
+        <span id="booking-email-hint" class="hint">Format : prenom@exemple.fr</span>
+        <input type="email" id="booking-email" name="email" required autocomplete="email" aria-describedby="booking-email-hint" data-error="booking-email-error">
+        <div id="booking-email-error" class="error-msg">
+          <span role="img" aria-label="Erreur">⚠️</span> Saisissez une adresse e-mail valide (ex. prenom@exemple.fr).
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="booking-phone">Téléphone mobile</label>
+        <span id="booking-phone-hint" class="hint">Format : 06 12 34 56 78 (pour prévenir en cas de météo)</span>
+        <input type="tel" id="booking-phone" name="phone" required pattern="[0-9 +\(\)\.\-]{8,18}" autocomplete="tel" aria-describedby="booking-phone-hint" data-error="booking-phone-error">
+        <div id="booking-phone-error" class="error-msg">
+          <span role="img" aria-label="Erreur">⚠️</span> Indiquez un numéro de téléphone valide (8 chiffres minimum).
+        </div>
+      </div>
+
+      <p class="demo-disclaimer">
+        🧪 <strong>Démonstrateur :</strong> cette réservation est enregistrée localement dans votre navigateur pour montrer le parcours aux membres du CA (aucun paiement débité).
+      </p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" data-close-dialog="booking-dialog">Annuler</button>
+        <button type="submit" class="btn-primary">Confirmer la pré-réservation</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODALE : Modifier Info Flash (Adhérent / CA) -->
+  <dialog id="flash-dialog" class="modal-dialog" closedby="any" aria-labelledby="flash-dialog-title">
+    <div class="modal-head">
+      <h1 id="flash-dialog-title" class="modal-title">Modifier l'info embarquement</h1>
+      <button type="button" class="modal-close" data-close-dialog="flash-dialog" aria-label="Fermer la fenêtre">✕</button>
+    </div>
+
+    <form id="flash-form" class="modal-form" novalidate>
+      <div class="field">
+        <label for="flash-input">Message affiché en haut de l'accueil</label>
+        <span id="flash-input-hint" class="hint">Ex. lieu d'embarquement selon le niveau d'eau ou alerte vent</span>
+        <textarea id="flash-input" name="flashText" rows="3" required minlength="8" aria-describedby="flash-input-hint" data-error="flash-input-error"></textarea>
+        <div id="flash-input-error" class="error-msg">
+          <span role="img" aria-label="Erreur">⚠️</span> Saisissez un message d'au moins 8 caractères.
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" data-close-dialog="flash-dialog">Annuler</button>
+        <button type="submit" class="btn-primary">Publier l'info flash</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODALE : Ajouter une activité (Démo CA) -->
+  <dialog id="activity-dialog" class="modal-dialog" closedby="any" aria-labelledby="activity-dialog-title">
+    <div class="modal-head">
+      <h1 id="activity-dialog-title" class="modal-title">Ajouter une activité au planning</h1>
+      <button type="button" class="modal-close" data-close-dialog="activity-dialog" aria-label="Fermer la fenêtre">✕</button>
+    </div>
+
+    <form id="activity-form" class="modal-form" novalidate>
+      <div class="field">
+        <label for="act-title">Titre de l'activité</label>
+        <span id="act-title-hint" class="hint">Ex. Balade découverte ou Chantier goudronnage</span>
+        <input type="text" id="act-title" name="title" required minlength="4" aria-describedby="act-title-hint" data-error="act-title-error">
+        <div id="act-title-error" class="error-msg">
+          <span role="img" aria-label="Erreur">⚠️</span> Indiquez un titre d'au moins 4 caractères.
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="act-type">Catégorie</label>
+          <select id="act-type" name="type">
+            <option value="dimanche">⛵ Dimanche de la Rabouilleuse</option>
+            <option value="balade">⛵ Balade publique</option>
+            <option value="evenement">🎶 Événement / Concert</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="act-date">Date</label>
+          <span id="act-date-hint" class="hint">Jour de l'activité</span>
+          <input type="date" id="act-date" name="date" required aria-describedby="act-date-hint" data-error="act-date-error">
+          <div id="act-date-error" class="error-msg">
+            <span role="img" aria-label="Erreur">⚠️</span> Choisissez une date.
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="act-time">Heure de rendez-vous</label>
+          <span id="act-time-hint" class="hint">Ex. 14:00</span>
+          <input type="time" id="act-time" name="time" value="14:00" required aria-describedby="act-time-hint" data-error="act-time-error">
+          <div id="act-time-error" class="error-msg">
+            <span role="img" aria-label="Erreur">⚠️</span> Choisissez un horaire.
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="act-spots">Places max</label>
+          <span id="act-spots-hint" class="hint">1 à 30 personnes</span>
+          <input type="number" id="act-spots" name="spots" min="1" max="30" value="12" required aria-describedby="act-spots-hint" data-error="act-spots-error">
+          <div id="act-spots-error" class="error-msg">
+            <span role="img" aria-label="Erreur">⚠️</span> Nombre entre 1 et 30.
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="act-place">Point de rendez-vous</label>
+        <input type="text" id="act-place" name="place" value="Ponton du Bateau-Lavoir (Rochecorbon)" required>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" data-close-dialog="activity-dialog">Annuler</button>
+        <button type="submit" class="btn-primary">Ajouter au planning</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODALE : Lightbox Album Photo -->
+  <dialog id="lightbox-dialog" class="modal-dialog modal-lightbox" closedby="any" aria-labelledby="lightbox-title">
+    <div class="modal-head">
+      <h1 id="lightbox-title" class="modal-title">Photo de Loire</h1>
+      <button type="button" class="modal-close" data-close-dialog="lightbox-dialog" aria-label="Fermer la photo">✕</button>
+    </div>
+    <figure class="lightbox-figure">
+      <img id="lightbox-img" src="" alt="">
+      <figcaption id="lightbox-caption"></figcaption>
+    </figure>
+    <div class="modal-actions lightbox-actions">
+      <button type="button" class="btn-secondary" id="lightbox-like-btn">❤️ J'aime (<span id="lightbox-like-count">0</span>)</button>
+      <button type="button" class="btn-primary" data-close-dialog="lightbox-dialog">Fermer</button>
+    </div>
+  </dialog>
+
+  <!-- MODALE : Partager une photo -->
+  <dialog id="photo-dialog" class="modal-dialog" closedby="any" aria-labelledby="photo-dialog-title">
+    <div class="modal-head">
+      <h1 id="photo-dialog-title" class="modal-title">Partager une photo dans l'album</h1>
+      <button type="button" class="modal-close" data-close-dialog="photo-dialog" aria-label="Fermer la fenêtre">✕</button>
+    </div>
+
+    <form id="photo-form" class="modal-form" novalidate>
+      <div class="field">
+        <label for="photo-file">Choisir une photo</label>
+        <span id="photo-file-hint" class="hint">Compressée automatiquement sur votre téléphone avant envoi</span>
+        <input type="file" id="photo-file" name="photoFile" accept="image/*" required aria-describedby="photo-file-hint" data-error="photo-file-error">
+        <div id="photo-file-error" class="error-msg">
+          <span role="img" aria-label="Erreur">⚠️</span> Sélectionnez un fichier image.
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="photo-title">Légende de la photo</label>
+        <span id="photo-title-hint" class="hint">Ex. Brume matinale devant Vouvray</span>
+        <input type="text" id="photo-title" name="title" required minlength="3" aria-describedby="photo-title-hint" data-error="photo-title-error">
+        <div id="photo-title-error" class="error-msg">
+          <span role="img" aria-label="Erreur">⚠️</span> Saisissez une courte légende (3 caractères min).
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="photo-category">Thème</label>
+          <select id="photo-category" name="category">
+            <option value="navigation">⛵ Navigations</option>
+            <option value="ambiance">🌅 Ambiances</option>
+            <option value="faune">🦅 Faune</option>
+            <option value="chantier">🛠️ Chantiers</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="photo-author">Votre prénom</label>
+          <span id="photo-author-hint" class="hint">Ex. Julie</span>
+          <input type="text" id="photo-author" name="author" required minlength="2" aria-describedby="photo-author-hint" data-error="photo-author-error">
+          <div id="photo-author-error" class="error-msg">
+            <span role="img" aria-label="Erreur">⚠️</span> Indiquez votre prénom.
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" data-close-dialog="photo-dialog">Annuler</button>
+        <button type="submit" class="btn-primary">Publier dans l'album</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODALE : À propos du démonstrateur CA -->
+  <dialog id="demo-info-dialog" class="modal-dialog" closedby="any" aria-labelledby="demo-info-title">
+    <div class="modal-head">
+      <h1 id="demo-info-title" class="modal-title">Démonstrateur La Rabouilleuse</h1>
+      <button type="button" class="modal-close" data-close-dialog="demo-info-dialog" aria-label="Fermer la fenêtre">✕</button>
+    </div>
+
+    <div class="demo-info-body">
+      <div class="demo-logo-banner">
+        <img src="./img/logo-rabouilleuse.png" alt="Logo officiel La Rabouilleuse" width="56" height="56">
+        <div>
+          <strong>La Rabouilleuse — École de Loire</strong>
+          <div class="muted-text" style="margin:0">Association loi 1901 (Rochecorbon) • Prototype compagnon de Loire</div>
+        </div>
+      </div>
+      <p style="margin-top:0.65rem">
+        Ce prototype reprend les informations officielles du site et montre ce que pourrait être l’application installable sur smartphone pour les adhérents et passagers :
+      </p>
+      <ul>
+        <li><strong>En temps réel (vraies APIs) :</strong> hauteur et débit de la Loire (Hub'Eau), cascade amont Gien ➔ Tours, météo fluviale (Open-Meteo) et tendances 7–30 jours (Copernicus GloFAS).</li>
+        <li><strong>Simulé localement (démo CA) :</strong> planning des balades, réservations, édition de l'info flash et ajout de photos (enregistrés dans le navigateur).</li>
+        <li><strong>Double vue :</strong> basculez entre <strong>👤 Visiteur</strong> et <strong>⚓ Adhérent</strong> dans la barre du haut.</li>
+      </ul>
+    </div>
+
+    <div class="modal-actions modal-actions-between">
+      <button type="button" class="btn-ghost" id="reset-demo-btn">↺ Réinitialiser la démo</button>
+      <button type="button" class="btn-primary" data-close-dialog="demo-info-dialog">Compris</button>
+    </div>
+  </dialog>
+
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "La Rabouilleuse — École de Loire",
+  "short_name": "La Rabouilleuse",
+  "description": "Météo fluviale, niveaux de la Loire (Hub'Eau & GloFAS), balades en bateau, agenda et vie associative à Rochecorbon.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8f5ef",
+  "theme_color": "#115b8c",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "./img/logo-rabouilleuse.png",
+      "sizes": "509x501",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

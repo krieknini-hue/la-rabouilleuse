@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="La Rabouilleuse - Toue ligérienne">
+  <rect width="128" height="128" rx="28" fill="#154c66"/>
+  <circle cx="92" cy="36" r="14" fill="#f6c270" opacity="0.92"/>
+  <!-- Mât et vergue -->
+  <rect x="61" y="24" width="4" height="62" rx="2" fill="#efeae0"/>
+  <rect x="38" y="34" width="50" height="4" rx="2" fill="#efeae0"/>
+  <!-- Voile carrée ligérienne -->
+  <path d="M41 38 L85 38 C87 52 86 64 82 74 L44 74 C40 62 39 50 41 38 Z" fill="#f8f5ef"/>
+  <path d="M42 56 L84 56" stroke="#dfd7c8" stroke-width="2"/>
+  <!-- Coque de toue traditionnelle -->
+  <path d="M22 82 L106 82 L94 96 L34 96 Z" fill="#b45d2a"/>
+  <path d="M28 82 L100 82 L97 87 L31 87 Z" fill="#8f461d"/>
+  <!-- Vagues de Loire -->
+  <path d="M12 100 Q 28 93 44 100 T 76 100 T 116 100" fill="none" stroke="#8fd3e8" stroke-width="5" stroke-linecap="round"/>
+  <path d="M20 112 Q 38 106 56 112 T 92 112 T 112 112" fill="none" stroke="#5eb5d3" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+</svg>

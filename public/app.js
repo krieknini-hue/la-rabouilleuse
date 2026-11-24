@@ -691,6 +691,18 @@
     badgeEl.textContent = sail.text;
     badgeEl.className = `sail-badge ${sail.cls}`;
 
+    const compassArrow = document.getElementById('wind-compass-arrow');
+    if (compassArrow) {
+      // Vent provenant de `wind_direction_10m` : l'aiguille pointe vers où souffle le vent (+180°)
+      const blowDir = (Math.round(cur.wind_direction_10m) + 180) % 360;
+      compassArrow.setAttribute('transform', `rotate(${blowDir} 20 20)`);
+    }
+
+    const heroWeather = document.getElementById('hero-weather-pill');
+    if (heroWeather) {
+      heroWeather.textContent = `${wmo.icon} ${Math.round(cur.temperature_2m)} °C • Vent ${wind} km/h ${comp.cardinal}`;
+    }
+
     // 7 jours
     const list = document.getElementById('weather-7d-list');
     list.innerHTML = '';
@@ -764,22 +776,22 @@
       <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Courbe de hauteur d'eau sur 72 heures à Tours Pont Mirabeau">
         <defs>
           <linearGradient id="grad72h" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#115b8c" stop-opacity="0.28"/>
-            <stop offset="100%" stop-color="#115b8c" stop-opacity="0.02"/>
+            <stop offset="0%" stop-color="#144963" stop-opacity="0.28"/>
+            <stop offset="100%" stop-color="#144963" stop-opacity="0.02"/>
           </linearGradient>
         </defs>
         <line x1="${ML}" y1="${MT}" x2="${W - MR}" y2="${MT}" stroke="#e5dfd3" stroke-dasharray="3 3"/>
         <line x1="${ML}" y1="${MT + innerH / 2}" x2="${W - MR}" y2="${MT + innerH / 2}" stroke="#e5dfd3" stroke-dasharray="3 3"/>
         <line x1="${ML}" y1="${MT + innerH}" x2="${W - MR}" y2="${MT + innerH}" stroke="#d1c8b8"/>
-        <text x="${ML - 6}" y="${MT + 4}" text-anchor="end" font-size="11" fill="#52606d">${yMax.toFixed(2)}</text>
-        <text x="${ML - 6}" y="${MT + innerH / 2 + 4}" text-anchor="end" font-size="11" fill="#52606d">${((yMax + yMin) / 2).toFixed(2)}</text>
-        <text x="${ML - 6}" y="${MT + innerH + 4}" text-anchor="end" font-size="11" fill="#52606d">${yMin.toFixed(2)}</text>
+        <text x="${ML - 6}" y="${MT + 4}" text-anchor="end" font-size="11" fill="#555e58">${yMax.toFixed(2)}</text>
+        <text x="${ML - 6}" y="${MT + innerH / 2 + 4}" text-anchor="end" font-size="11" fill="#555e58">${((yMax + yMin) / 2).toFixed(2)}</text>
+        <text x="${ML - 6}" y="${MT + innerH + 4}" text-anchor="end" font-size="11" fill="#555e58">${yMin.toFixed(2)}</text>
         <polygon points="${areaPoints}" fill="url(#grad72h)"/>
-        <polyline points="${linePoints}" fill="none" stroke="#115b8c" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
-        <circle cx="${lastX}" cy="${lastY}" r="4.5" fill="#92332a" stroke="#ffffff" stroke-width="1.8"/>
-        <text x="${ML}" y="${H - 6}" font-size="11" fill="#52606d">-72 h</text>
-        <text x="${ML + innerW / 2}" y="${H - 6}" text-anchor="middle" font-size="11" fill="#52606d">-36 h</text>
-        <text x="${W - MR}" y="${H - 6}" text-anchor="end" font-size="11" fill="#115b8c" font-weight="700">Maintenant (${formatHeightMeters(lastPt.resultat_obs)})</text>
+        <polyline points="${linePoints}" fill="none" stroke="#144963" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="${lastX}" cy="${lastY}" r="4.5" fill="#8f3b26" stroke="#ffffff" stroke-width="1.8"/>
+        <text x="${ML}" y="${H - 6}" font-size="11" fill="#555e58">-72 h</text>
+        <text x="${ML + innerW / 2}" y="${H - 6}" text-anchor="middle" font-size="11" fill="#555e58">-36 h</text>
+        <text x="${W - MR}" y="${H - 6}" text-anchor="end" font-size="11" fill="#144963" font-weight="700">Maintenant (${formatHeightMeters(lastPt.resultat_obs)})</text>
       </svg>
     `;
   }
@@ -826,10 +838,22 @@
     }
 
     if (toursH !== null) {
-      const nav = getRiverNavBadge(toursH / 1000);
+      const hMeters = toursH / 1000;
+      const nav = getRiverNavBadge(hMeters);
       const badge = document.getElementById('river-nav-badge');
       badge.textContent = nav.text;
       badge.className = `river-level-badge ${nav.cls}`;
+
+      const marker = document.getElementById('river-scale-marker');
+      if (marker) {
+        const pct = Math.min(98, Math.max(2, ((hMeters - (-0.2)) / 3.4) * 100));
+        marker.style.left = `${pct.toFixed(1)}%`;
+      }
+
+      const heroRiver = document.getElementById('hero-river-pill');
+      if (heroRiver) {
+        heroRiver.textContent = `🌊 Loire à Tours : ${formatHeightMeters(toursH)} (${nav.text})`;
+      }
     }
 
     const obsTime = toursSt?.hNow?.date_obs ? formatHourFr(toursSt.hNow.date_obs) : '';
@@ -961,15 +985,15 @@
         <text x="${ML - 6}" y="${MT + innerH + 4}" text-anchor="end" font-size="11" fill="#52606d">${Math.round(yMin)}</text>
         <text x="${ML - 6}" y="${MT - 10}" text-anchor="end" font-size="10" fill="#52606d" font-weight="600">m³/s</text>
 
-        <polygon points="${bandPolygon}" fill="rgba(17, 91, 140, 0.16)"/>
-        <line x1="${todayX}" y1="${MT}" x2="${todayX}" y2="${MT + innerH}" stroke="#92332a" stroke-width="1.5" stroke-dasharray="4 3"/>
-        <text x="${todayX}" y="${MT - 3}" text-anchor="middle" font-size="10" fill="#92332a" font-weight="700">Aujourd'hui</text>
+        <polygon points="${bandPolygon}" fill="rgba(20, 73, 99, 0.16)"/>
+        <line x1="${todayX}" y1="${MT}" x2="${todayX}" y2="${MT + innerH}" stroke="#8f3b26" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="${todayX}" y="${MT - 3}" text-anchor="middle" font-size="10" fill="#8f3b26" font-weight="700">Aujourd'hui</text>
 
         ${pastLine ? `<polyline points="${pastLine}" fill="none" stroke="#64748b" stroke-width="2.4" stroke-linejoin="round"/>` : ''}
-        ${futureLine ? `<polyline points="${futureLine}" fill="none" stroke="#115b8c" stroke-width="2.8" stroke-linejoin="round"/>` : ''}
+        ${futureLine ? `<polyline points="${futureLine}" fill="none" stroke="#144963" stroke-width="2.8" stroke-linejoin="round"/>` : ''}
 
-        <text x="${ML}" y="${H - 6}" font-size="11" fill="#52606d">${items[0].date.slice(5)}</text>
-        <text x="${W - MR}" y="${H - 6}" text-anchor="end" font-size="11" fill="#115b8c" font-weight="700">+${horizonDays} j (${items[items.length - 1].date.slice(5)})</text>
+        <text x="${ML}" y="${H - 6}" font-size="11" fill="#555e58">${items[0].date.slice(5)}</text>
+        <text x="${W - MR}" y="${H - 6}" text-anchor="end" font-size="11" fill="#144963" font-weight="700">+${horizonDays} j (${items[items.length - 1].date.slice(5)})</text>
       </svg>
     `;
   }

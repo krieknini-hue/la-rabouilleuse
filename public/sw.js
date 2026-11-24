@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rabouilleuse-demo-v3';
+const CACHE_NAME = 'rabouilleuse-demo-v4';
 const SHELL_ASSETS = [
   './',
   './index.html',

@@ -622,11 +622,27 @@
     return { cardinal: dirs[idx], arrow: arrows[idx] };
   }
 
-  function getSailCondition(windKmh, gustsKmh) {
+  function isFavorableSailWind(deg) {
+    if (deg === null || deg === undefined || Number.isNaN(Number(deg))) return false;
+    const { cardinal } = degToCompass(Number(deg));
+    return cardinal === 'SO' || cardinal === 'O' || cardinal === 'NO';
+  }
+
+  function getSailCondition(windKmh, gustsKmh, windDeg) {
+    const favorableDir = isFavorableSailWind(windDeg);
     if (gustsKmh >= 45 || windKmh >= 30) return { text: 'Fortes rafales', cls: 'badge-red' };
-    if (gustsKmh >= 32 || windKmh >= 22) return { text: 'Vent soutenu', cls: 'badge-amber' };
-    if (windKmh >= 9) return { text: 'Idéal voile carrée', cls: 'badge-green' };
-    return { text: 'Calme / aviron', cls: 'badge-blue' };
+    if (gustsKmh >= 32 || windKmh >= 22) {
+      return {
+        text: favorableDir ? 'Vent soutenu (SO–NO)' : 'Vent soutenu (hors secteur)',
+        cls: 'badge-amber'
+      };
+    }
+    if (windKmh >= 9) {
+      return favorableDir
+        ? { text: 'Idéal voile carrée (remontée)', cls: 'badge-green' }
+        : { text: 'Vent défavorable voile (aviron/moteur)', cls: 'badge-blue' };
+    }
+    return { text: 'Calme / aviron & bourde', cls: 'badge-blue' };
   }
 
   function getRiverNavBadge(heightMeters) {
@@ -674,7 +690,7 @@
     const comp = degToCompass(cur.wind_direction_10m);
     const wind = Math.round(cur.wind_speed_10m);
     const gusts = Math.round(cur.wind_gusts_10m);
-    const sail = getSailCondition(wind, gusts);
+    const sail = getSailCondition(wind, gusts, cur.wind_direction_10m);
 
     document.getElementById('weather-current-icon').textContent = wmo.icon;
     document.getElementById('weather-current-temp').textContent = `${Math.round(cur.temperature_2m)} °C`;
@@ -709,14 +725,19 @@
     const d = data.daily;
     for (let i = 0; i < d.time.length; i++) {
       const dayWmo = wmoToFrench(d.weather_code[i]);
-      const dayComp = degToCompass(d.wind_direction_10m_dominant[i]);
+      const dayDir = d.wind_direction_10m_dominant[i];
+      const dayComp = degToCompass(dayDir);
+      const dayWind = Math.round(d.wind_speed_10m_max[i]);
+      const dayGusts = Math.round(d.wind_gusts_10m_max[i]);
+      const sailOk = isFavorableSailWind(dayDir) && dayWind >= 9 && dayGusts < 45 && dayWind < 30;
+      const sailMark = sailOk ? ' <span title="Vent favorable voile carrée (SO–NO)">⛵</span>' : '';
       const row = document.createElement('div');
       row.className = 'forecast-row';
       row.innerHTML = `
         <span class="forecast-day">${i === 0 ? "Aujourd'hui" : formatShortDay(d.time[i])}</span>
         <span aria-label="${dayWmo.label}" title="${dayWmo.label}">${dayWmo.icon}</span>
         <span class="forecast-temps">${Math.round(d.temperature_2m_max[i])}° <span class="t-min">/ ${Math.round(d.temperature_2m_min[i])}°</span></span>
-        <span class="forecast-wind">💨 ${Math.round(d.wind_speed_10m_max[i])}–${Math.round(d.wind_gusts_10m_max[i])} km/h ${dayComp.cardinal}</span>
+        <span class="forecast-wind">💨 ${dayWind}–${dayGusts} km/h ${dayComp.cardinal}${sailMark}</span>
         <span class="forecast-rain">💧 ${d.precipitation_probability_max[i] ?? 0}%</span>
       `;
       list.appendChild(row);
@@ -1016,7 +1037,7 @@
     document.getElementById('weather-current-dir').textContent = '↗ SO (225°)';
     document.getElementById('weather-sun-times').textContent = '08:10 / 17:15';
     const badgeEl = document.getElementById('sail-condition-badge');
-    badgeEl.textContent = 'Idéal voile carrée';
+    badgeEl.textContent = 'Idéal voile carrée (remontée)';
     badgeEl.className = 'sail-badge badge-green';
     const list = document.getElementById('weather-7d-list');
     if (list && list.querySelector('.skeleton-box')) {

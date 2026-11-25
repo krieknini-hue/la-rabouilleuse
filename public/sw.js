@@ -1,9 +1,9 @@
-const CACHE_NAME = 'rabouilleuse-demo-v6';
+const CACHE_NAME = 'rabouilleuse-demo-v7';
 const SHELL_ASSETS = [
   './',
   './index.html',
   './styles.css?v=5',
-  './app.js?v=5',
+  './app.js?v=6',
   './manifest.json',
   './img/logo-rabouilleuse.png',
   './img/icon-512.png'
